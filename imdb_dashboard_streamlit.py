@@ -144,12 +144,11 @@ if title_input:
         st.session_state['search_history'].insert(0, title_input)
         st.session_state['search_history'] = st.session_state['search_history'][:10]
 
-# Mood-based Recommendation
-st.subheader("🤖 Rekomendasi Film Berdasarkan Mood & Genre")
-
-# Rekomendasi berdasarkan histori pencarian judul
+# --- Section Baru: Rekomendasi Berdasarkan Histori Pencarian Judul ---
+st.markdown('---')
+st.subheader("🔎 Rekomendasi Berdasarkan Histori Pencarian Judul")
 if st.session_state['search_history']:
-    st.markdown("**Rekomendasi berdasarkan histori pencarian judul:**")
+    st.markdown("Histori pencarian judul: " + ", ".join(st.session_state['search_history']))
     # Gabungkan semua judul dari histori, cari film yang judulnya mengandung salah satu histori
     history_pattern = '|'.join([h for h in st.session_state['search_history'] if h])
     if history_pattern:
@@ -158,6 +157,11 @@ if st.session_state['search_history']:
             st.table(history_recommend[['title', 'year', 'genres', 'rating']].drop_duplicates('title').head(10))
         else:
             st.info("Tidak ada rekomendasi dari histori pencarian.")
+else:
+    st.info("Belum ada histori pencarian judul.")
+
+# Mood-based Recommendation
+st.subheader("🤖 Rekomendasi Film Berdasarkan Mood & Genre")
 
 # Update mood options
 mood_map = {
