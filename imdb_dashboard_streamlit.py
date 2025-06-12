@@ -243,11 +243,15 @@ st.plotly_chart(fig2, use_container_width=True)
 # Top 10 Film Terlaris berdasarkan genre yang dipilih
 if selected_genre != "Semua Genre":
     st.subheader(f"🏆 Top 10 Film Terlaris dalam Genre '{selected_genre}'")
+
     top_genre = exploded[exploded['genres'] == selected_genre]
     top_genre = top_genre.sort_values(by='numVotes', ascending=False).drop_duplicates('title')
     top_genre['year'] = top_genre['year'].astype(int)
     top_genre['rating'] = top_genre['rating'].astype(float).round(1)
-    top_genre['year'] = top_genre['year'].astype(int)
+
+    top_genre_display = top_genre[['title', 'year', 'rating', 'numVotes']].head(10)
+    st.table(top_genre_display)
+
 
 # Footer
 st.markdown("---")
