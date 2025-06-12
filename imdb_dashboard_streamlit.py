@@ -88,7 +88,8 @@ year_range = st.sidebar.slider("Tahun Rilis", min_year, 2025, (2000, 2025))
 rating_min = st.sidebar.slider("Minimum Rating", 0.0, 10.0, 7.0, 0.1)
 
 # Genre & Judul input
-genre_input = st.sidebar.text_input("Cari Genre", "Drama").strip().lower()
+all_genres = sorted(set(g for sublist in df['genres'].str.split(', ') for g in sublist))
+genre_input = st.sidebar.selectbox("Pilih Genre", ["Semua Genre"] + all_genres)
 title_input = st.sidebar.text_input("Cari Judul Film", "").strip().lower()
 
 # Filter data
@@ -97,8 +98,8 @@ filtered = df[
     (df['rating'] >= rating_min)
 ]
 
-if genre_input:
-    filtered = filtered[filtered['genres'].str.lower().str.contains(genre_input)]
+if genre_input != "Semua Genre":
+    filtered = filtered[filtered['genres'].str.contains(genre_input, case=False)]
 
 if title_input:
     filtered = filtered[filtered['title'].str.lower().str.contains(title_input)]
@@ -106,8 +107,8 @@ if title_input:
 st.subheader("📄 Film Sesuai Filter")
 st.dataframe(filtered[['title', 'year', 'genres', 'rating', 'numVotes']], use_container_width=True)
 
-# Genre vs Rating Heatmap (Interactive)
-st.subheader("📊 Rata-Rata Rating per Genre (Interaktif)")
+# Genre vs Rating Heatmap
+st.subheader("📊 Rata-Rata Rating per Genre")
 
 exploded = df.copy()
 exploded['genres'] = exploded['genres'].str.split(", ")
@@ -143,20 +144,20 @@ mood_map = {
 }
 
 mood = st.selectbox("Pilih Mood Kamu", list(mood_map.keys()))
-user_genre = st.text_input("(Opsional) Tambah Genre Favoritmu", "").strip().title()
+user_genre = st.selectbox("(Opsional) Tambah Genre Favoritmu", ["-"] + all_genres)
 target_genres = mood_map[mood].copy()
-if user_genre:
+if user_genre != "-":
     target_genres.append(user_genre)
 
 recommend = exploded[exploded['genres'].isin(target_genres)]
 recommend = recommend.sort_values(by="rating", ascending=False).drop_duplicates("title")
 
-st.markdown(f"Top rekomendasi untuk mood **{mood}**{f' & genre **{user_genre}**' if user_genre else ''}:")
+st.markdown(f"Top rekomendasi untuk mood **{mood}**{f' & genre **{user_genre}**' if user_genre != '-' else ''}:")
 recommend['year'] = recommend['year'].astype(int)
 st.table(recommend[['title', 'year', 'genres', 'rating']].head(10))
 
-# Trending Movies This Year (Interactive)
-st.subheader("🔥 Film Trending Tahun Ini (Interaktif)")
+# Trending Movies This Year
+st.subheader("🔥 Film Trending Tahun Ini")
 
 latest_year = df['year'].max()
 top_year = df[df['year'] == latest_year]
