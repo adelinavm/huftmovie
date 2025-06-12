@@ -73,7 +73,7 @@ mood_map = {
     "Bersemangat": ["Adventure", "Action"],
     "Jatuh Cinta": ["Romance", "Drama"],
     "Berani": ["Thriller", "Crime", "Mystery"],
-    "Senang": ["Comedy"]
+    "Sedih": ["Comedy"]
 }
 
 mood = st.selectbox("Pilih Mood Kamu", list(mood_map.keys()))
