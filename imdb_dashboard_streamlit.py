@@ -184,7 +184,8 @@ recommend = recommend.sort_values(by="rating", ascending=False).drop_duplicates(
 
 st.markdown(f"Top rekomendasi untuk mood **{mood}**{f' & genre **{user_genre}**' if user_genre != '-' else ''}:")
 recommend['year'] = recommend['year'].astype(int)
-st.table(recommend[['title', 'year', 'genres', 'rating']].head(10))
+recommend['rating'] = recommend['rating'].astype(float).round(1)
+recommend['year'] = recommend['year'].astype(int)
 
 # Trending Movies This Year
 st.subheader("🔥 Film Trending Tahun Ini")
@@ -238,7 +239,8 @@ if selected_genre != "Semua Genre":
     top_genre = exploded[exploded['genres'] == selected_genre]
     top_genre = top_genre.sort_values(by='numVotes', ascending=False).drop_duplicates('title')
     top_genre['year'] = top_genre['year'].astype(int)
-    st.table(top_genre[['title', 'year', 'rating', 'numVotes']].head(10))
+    top_genre['rating'] = top_genre['rating'].astype(float).round(1)
+    top_genre['year'] = top_genre['year'].astype(int)
 
 # Footer
 st.markdown("---")
