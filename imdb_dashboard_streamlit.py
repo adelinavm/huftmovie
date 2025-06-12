@@ -19,13 +19,15 @@ st.sidebar.header("🔎 Filter Film")
 years = st.sidebar.slider("Tahun Rilis", int(df['year'].min()), int(df['year'].max()), (2000, 2020))
 rating_min = st.sidebar.slider("Minimum Rating", 0.0, 10.0, 7.0, 0.1)
 genre_input = st.sidebar.text_input("Cari Genre", "Drama")
+title_input = st.sidebar.text_input("Cari Judul Film", "")
 
 # Filtered Data
 filtered = df[
     (df['year'].between(years[0], years[1])) &
     (df['rating'] != "N/A") &
     (df['rating'].astype(float) >= rating_min) &
-    (df['genres'].str.contains(genre_input, case=False))
+    (df['genres'].str.contains(genre_input, case=False)) &
+    (df['title'].str.contains(title_input, case=False))
 ]
 
 st.subheader("📄 Film Sesuai Filter")
