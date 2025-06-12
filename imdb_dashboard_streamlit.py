@@ -19,7 +19,7 @@ st.title("🎬 IMDb Movie Dashboard - 1 Adik 4 Kakak")
 
 # Sidebar - Filters
 st.sidebar.header("🔎 Filter Film")
-years = st.sidebar.slider("Tahun Rilis", int(df['year'].min()), int(df['year'].max()), (2000, 2020))
+years = st.sidebar.slider("Tahun Rilis", int(df['year'].min()), 2025, (2000, 2025))
 rating_min = st.sidebar.slider("Minimum Rating", 0.0, 10.0, 7.0, 0.1)
 genre_input = st.sidebar.text_input("Cari Genre", "Drama")
 title_input = st.sidebar.text_input("Cari Judul Film", "")
