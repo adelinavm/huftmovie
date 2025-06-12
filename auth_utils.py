@@ -12,7 +12,14 @@ def load_users():
     if not os.path.exists(USER_FILE):
         return {}
     with open(USER_FILE, "r") as f:
-        return json.load(f)
+        try:
+            data = json.load(f)
+            if isinstance(data, list):
+                # If file is an empty list, return empty dict for backward compatibility
+                return {}
+            return data
+        except Exception:
+            return {}
 
 def save_users(users):
     with open(USER_FILE, "w") as f:

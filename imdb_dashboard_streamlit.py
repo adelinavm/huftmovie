@@ -174,8 +174,11 @@ fig_trend = px.bar(
 fig_trend.update_layout(xaxis_tickangle=-45)
 st.plotly_chart(fig_trend, use_container_width=True)
 
-# Visualisasi tren film sekarang (jumlah film per genre per tahun) (Interactive)
+# Visualisasi tren film sekarang (jumlah film per genre per tahun)
 st.subheader("📈 Tren Film Saat Ini")
+
+trend_data = exploded[exploded['year'] >= latest_year - 5]  # 5 tahun terakhir
+trend = trend_data.groupby(['year', 'genres']).size().reset_index(name='count')
 
 # Dropdown untuk memilih genre
 all_genres = sorted(trend['genres'].unique())
@@ -186,15 +189,15 @@ if selected_genre != "Semua Genre":
 else:
     trend_filtered = trend
 
-fig2 = px.bar(
+fig2 = px.line(
     trend_filtered,
     x='year',
     y='count',
     color='genres',
+    markers=True,
     hover_data=['genres', 'count'],
     labels={'count': 'Jumlah Film', 'year': 'Tahun', 'genres': 'Genre'},
-    title='Jumlah Film per Genre (5 Tahun Terakhir)',
-    barmode='stack'
+    title='Jumlah Film per Genre (5 Tahun Terakhir)'
 )
 st.plotly_chart(fig2, use_container_width=True)
 
