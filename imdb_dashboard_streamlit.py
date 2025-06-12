@@ -8,7 +8,10 @@ st.set_page_config(layout="wide")
 # Load data
 @st.cache_data
 def load_data():
-    return pd.read_csv("film_detail_complete_fixed.csv")
+    df = pd.read_csv("film_detail_complete_fixed.csv")
+    df = df[df['title'].notna() & df['genres'].notna() & df['rating'].notna()]  # Hindari baris kosong
+    df = df[df['title'] != "N/A"]  # Hindari N/A
+    return df
 
 df = load_data()
 
@@ -24,10 +27,10 @@ title_input = st.sidebar.text_input("Cari Judul Film", "")
 # Filtered Data
 filtered = df[
     (df['year'].between(years[0], years[1])) &
-    (df['rating'] != "N/A") &
+    (df['rating'].astype(str) != "N/A") &
     (df['rating'].astype(float) >= rating_min) &
-    (df['genres'].str.contains(genre_input, case=False)) &
-    (df['title'].str.contains(title_input, case=False))
+    (df['genres'].str.contains(genre_input, case=False, na=False)) &
+    (df['title'].str.contains(title_input, case=False, na=False))
 ]
 
 st.subheader("📄 Film Sesuai Filter")
