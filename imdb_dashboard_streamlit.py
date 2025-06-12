@@ -70,10 +70,10 @@ st.pyplot(fig)
 st.subheader("🤖 Rekomendasi Film Berdasarkan Mood")
 
 mood_map = {
-    "Petualangan": ["Adventure", "Action"],
-    "Cinta": ["Romance", "Drama"],
-    "Tegang": ["Thriller", "Crime", "Mystery"],
-    "Lucu": ["Comedy"]
+    "Bersemangat": ["Adventure", "Action"],
+    "Jatuh Cinta": ["Romance", "Drama"],
+    "Berani": ["Thriller", "Crime", "Mystery"],
+    "Senang": ["Comedy"]
 }
 
 mood = st.selectbox("Pilih Mood Kamu", list(mood_map.keys()))
@@ -83,6 +83,7 @@ recommend = exploded[exploded['genres'].isin(target_genres)]
 recommend = recommend.sort_values(by="rating", ascending=False).drop_duplicates("title")
 
 st.markdown(f"Top rekomendasi untuk mood **{mood}**:")
+recommend['year'] = recommend['year'].astype(int)
 st.table(recommend[['title', 'year', 'genres', 'rating']].head(10))
 
 #Trending Movies This Year
@@ -93,6 +94,7 @@ top_year = df[df['year'] == latest_year]
 top_year = top_year.sort_values(by='numVotes', ascending=False)
 
 st.markdown(f"Film dengan suara terbanyak di tahun **{latest_year}**:")
+top_year['year'] = top_year['year'].astype(int)
 st.table(top_year[['title', 'year', 'rating', 'numVotes']].head(10))
 
 # Footer
