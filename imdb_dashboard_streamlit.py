@@ -25,13 +25,18 @@ genre_input = st.sidebar.text_input("Cari Genre", "Drama")
 title_input = st.sidebar.text_input("Cari Judul Film", "")
 
 # Filtered Data
-filtered = df[
-    (df['year'].between(years[0], years[1])) &
-    (df['rating'].astype(str) != "N/A") &
-    (df['rating'].astype(float) >= rating_min) &
-    (df['genres'].str.contains(genre_input, case=False, na=False)) &
-    (df['title'].str.contains(title_input, case=False, na=False))
+filtered = df.copy()
+filtered = filtered[
+    (filtered['year'].between(years[0], years[1])) &
+    (filtered['rating'].astype(str) != "N/A") &
+    (filtered['rating'].astype(float) >= rating_min)
 ]
+
+if genre_input:
+    filtered = filtered[filtered['genres'].str.contains(genre_input, case=False, na=False)]
+
+if title_input:
+    filtered = filtered[filtered['title'].str.contains(title_input, case=False, na=False)]
 
 st.subheader("📄 Film Sesuai Filter")
 st.dataframe(filtered[['title', 'year', 'genres', 'rating', 'numVotes']], use_container_width=True)
