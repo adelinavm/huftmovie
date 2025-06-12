@@ -134,7 +134,7 @@ else:
     fig.update_layout(yaxis={'categoryorder':'total ascending'})
     st.plotly_chart(fig, use_container_width=True)
 
-# --- Histori Pencarian Judul ---
+# Histori Pencarian Judul
 if 'search_history' not in st.session_state:
     st.session_state['search_history'] = []
 
@@ -144,22 +144,32 @@ if title_input:
         st.session_state['search_history'].insert(0, title_input)
         st.session_state['search_history'] = st.session_state['search_history'][:10]
 
-# --- Section Baru: Rekomendasi Berdasarkan Histori Pencarian Judul ---
+# Section Baru: Rekomendasi Berdasarkan Histori Pencarian Judul
 st.markdown('---')
 st.subheader("🔎 Rekomendasi Berdasarkan Histori Pencarian Judul")
+
 if st.session_state['search_history']:
     st.markdown("Histori pencarian judul: " + ", ".join(st.session_state['search_history']))
+
     # Gabungkan semua judul dari histori, cari film yang judulnya mengandung salah satu histori
     history_pattern = '|'.join([h for h in st.session_state['search_history'] if h])
+
     if history_pattern:
-        history_recommend = df[df['title'].str.lower().str.contains(history_pattern, regex=True)]
+        history_recommend = df[df['title'].str.lower().str.contains(history_pattern.lower(), regex=True)]
+
         if not history_recommend.empty:
-            st.table(history_recommend[['title', 'year', 'genres', 'rating']].drop_duplicates('title').head(10))
+            # Format tahun dan rating
+            history_recommend = history_recommend.drop_duplicates('title')
+            history_recommend['year'] = history_recommend['year'].astype(int)
+            history_recommend['rating'] = history_recommend['rating'].astype(float).round(1)
+
+            # Tampilkan tabel
+            st.table(history_recommend[['title', 'year', 'genres', 'rating']].head(10))
         else:
             st.info("Tidak ada rekomendasi dari histori pencarian.")
 else:
     st.info("Belum ada histori pencarian judul.")
-
+    
 # Mood-based Recommendation
 st.subheader("🤖 Rekomendasi Film Berdasarkan Mood & Genre")
 
