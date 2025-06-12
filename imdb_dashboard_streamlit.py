@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
+import plotly.express as px
 from auth_utils import register_user, authenticate_user
 
 st.set_page_config(layout="wide")
@@ -107,21 +106,28 @@ if title_input:
 st.subheader("📄 Film Sesuai Filter")
 st.dataframe(filtered[['title', 'year', 'genres', 'rating', 'numVotes']], use_container_width=True)
 
-# Genre vs Rating Heatmap
-st.subheader("📊 Rata-Rata Rating per Genre")
+# Genre vs Rating Heatmap (Interactive)
+st.subheader("📊 Rata-Rata Rating per Genre (Interaktif)")
 
 exploded = df.copy()
 exploded['genres'] = exploded['genres'].str.split(", ")
 exploded = exploded.explode('genres')
 
-genre_rating = exploded.groupby('genres')['rating'].mean().sort_values(ascending=False)
+genre_rating = exploded.groupby('genres')['rating'].mean().sort_values(ascending=False).reset_index()
 
-fig, ax = plt.subplots(figsize=(10, 6))
-sns.barplot(x=genre_rating.values, y=genre_rating.index, palette="viridis", ax=ax)
-ax.set_xlabel("Rata-Rata Rating")
-ax.set_ylabel("Genre")
-ax.set_title("Rata-Rata Rating per Genre")
-st.pyplot(fig)
+fig = px.bar(
+    genre_rating,
+    x='rating',
+    y='genres',
+    orientation='h',
+    color='rating',
+    color_continuous_scale='viridis',
+    hover_data={'genres': True, 'rating': ':.2f'},
+    labels={'rating': 'Rata-Rata Rating', 'genres': 'Genre'},
+    title='Rata-Rata Rating per Genre'
+)
+fig.update_layout(yaxis={'categoryorder':'total ascending'})
+st.plotly_chart(fig, use_container_width=True)
 
 # Mood-based Recommendation
 st.subheader("🤖 Rekomendasi Film Berdasarkan Mood & Genre")
@@ -149,30 +155,41 @@ st.markdown(f"Top rekomendasi untuk mood **{mood}**{f' & genre **{user_genre}**'
 recommend['year'] = recommend['year'].astype(int)
 st.table(recommend[['title', 'year', 'genres', 'rating']].head(10))
 
-# Trending Movies This Year
-st.subheader("🔥 Film Trending Tahun Ini")
+# Trending Movies This Year (Interactive)
+st.subheader("🔥 Film Trending Tahun Ini (Interaktif)")
 
 latest_year = df['year'].max()
 top_year = df[df['year'] == latest_year]
 top_year = top_year.sort_values(by='numVotes', ascending=False)
 
-st.markdown(f"Film dengan suara terbanyak di tahun **{latest_year}**:")
-top_year['year'] = top_year['year'].astype(int)
-st.table(top_year[['title', 'year', 'rating', 'numVotes']].head(10))
+fig_trend = px.bar(
+    top_year.head(10),
+    x='title',
+    y='numVotes',
+    color='rating',
+    hover_data=['title', 'rating', 'numVotes'],
+    labels={'title': 'Judul Film', 'numVotes': 'Jumlah Suara', 'rating': 'Rating'},
+    title=f'Film dengan suara terbanyak di tahun {int(latest_year)}'
+)
+fig_trend.update_layout(xaxis_tickangle=-45)
+st.plotly_chart(fig_trend, use_container_width=True)
 
-# Visualisasi tren film sekarang (jumlah film per genre per tahun)
-st.subheader("📈 Tren Film Saat Ini")
+# Visualisasi tren film sekarang (jumlah film per genre per tahun) (Interactive)
+st.subheader("📈 Tren Film Saat Ini (Interaktif)")
 trend_data = exploded[exploded['year'] >= latest_year - 5]  # 5 tahun terakhir
 trend = trend_data.groupby(['year', 'genres']).size().reset_index(name='count')
-trend_pivot = trend.pivot(index='year', columns='genres', values='count').fillna(0)
 
-fig2, ax2 = plt.subplots(figsize=(12, 6))
-trend_pivot.plot(kind='bar', stacked=True, ax=ax2, colormap='tab20')
-ax2.set_ylabel('Jumlah Film')
-ax2.set_xlabel('Tahun')
-ax2.set_title('Jumlah Film per Genre (5 Tahun Terakhir)')
-ax2.legend(loc='upper left', bbox_to_anchor=(1, 1))
-st.pyplot(fig2)
+fig2 = px.bar(
+    trend,
+    x='year',
+    y='count',
+    color='genres',
+    hover_data=['genres', 'count'],
+    labels={'count': 'Jumlah Film', 'year': 'Tahun', 'genres': 'Genre'},
+    title='Jumlah Film per Genre (5 Tahun Terakhir)',
+    barmode='stack'
+)
+st.plotly_chart(fig2, use_container_width=True)
 
 # Footer
 st.markdown("---")
