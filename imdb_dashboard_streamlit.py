@@ -105,33 +105,59 @@ if title_input:
     filtered = filtered[filtered['title'].str.lower().str.contains(title_input)]
 
 st.subheader("📄 Film Sesuai Filter")
-st.dataframe(filtered[['title', 'year', 'genres', 'rating', 'numVotes']], use_container_width=True)
+filtered = filtered[filtered['title'].str.lower().str.contains(title_input, regex=False)]
+if filtered.empty:
+    st.warning("Tidak ada data yang sesuai dengan filter yang dipilih.")
+else:
+    st.dataframe(filtered[['title', 'year', 'genres', 'rating', 'numVotes']], use_container_width=True)
 
 # Genre vs Rating Heatmap
 st.subheader("📊 Rata-Rata Rating per Genre")
-
 exploded = df.copy()
 exploded['genres'] = exploded['genres'].str.split(", ")
 exploded = exploded.explode('genres')
-
 genre_rating = exploded.groupby('genres')['rating'].mean().sort_values(ascending=False).reset_index()
+if exploded.empty or genre_rating.empty:
+    st.warning("Data tidak tersedia untuk visualisasi genre.")
+else:
+    fig = px.bar(
+        genre_rating,
+        x='rating',
+        y='genres',
+        orientation='h',
+        color='rating',
+        color_continuous_scale='viridis',
+        hover_data={'genres': True, 'rating': ':.2f'},
+        labels={'rating': 'Rata-Rata Rating', 'genres': 'Genre'},
+        title='Rata-Rata Rating per Genre'
+    )
+    fig.update_layout(yaxis={'categoryorder':'total ascending'})
+    st.plotly_chart(fig, use_container_width=True)
 
-fig = px.bar(
-    genre_rating,
-    x='rating',
-    y='genres',
-    orientation='h',
-    color='rating',
-    color_continuous_scale='viridis',
-    hover_data={'genres': True, 'rating': ':.2f'},
-    labels={'rating': 'Rata-Rata Rating', 'genres': 'Genre'},
-    title='Rata-Rata Rating per Genre'
-)
-fig.update_layout(yaxis={'categoryorder':'total ascending'})
-st.plotly_chart(fig, use_container_width=True)
+# --- Histori Pencarian Judul ---
+if 'search_history' not in st.session_state:
+    st.session_state['search_history'] = []
+
+if title_input:
+    # Simpan histori pencarian judul (maksimal 10 histori terakhir, tidak duplikat)
+    if title_input not in st.session_state['search_history']:
+        st.session_state['search_history'].insert(0, title_input)
+        st.session_state['search_history'] = st.session_state['search_history'][:10]
 
 # Mood-based Recommendation
 st.subheader("🤖 Rekomendasi Film Berdasarkan Mood & Genre")
+
+# Rekomendasi berdasarkan histori pencarian judul
+if st.session_state['search_history']:
+    st.markdown("**Rekomendasi berdasarkan histori pencarian judul:**")
+    # Gabungkan semua judul dari histori, cari film yang judulnya mengandung salah satu histori
+    history_pattern = '|'.join([h for h in st.session_state['search_history'] if h])
+    if history_pattern:
+        history_recommend = df[df['title'].str.lower().str.contains(history_pattern, regex=True)]
+        if not history_recommend.empty:
+            st.table(history_recommend[['title', 'year', 'genres', 'rating']].drop_duplicates('title').head(10))
+        else:
+            st.info("Tidak ada rekomendasi dari histori pencarian.")
 
 # Update mood options
 mood_map = {
