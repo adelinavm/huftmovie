@@ -163,29 +163,36 @@ else:
 # Mood-based Recommendation
 st.subheader("🤖 Rekomendasi Film Berdasarkan Mood & Genre")
 
-# Update mood options
 mood_map = {
     "Bersemangat": ["Adventure", "Action"],
     "Jatuh Cinta": ["Romance", "Drama"],
-    "Berani": ["Thriller", "Crime", "Mystery"],
+    "Tertantang": ["Thriller", "Crime", "Mystery"],
     "Sedih": ["Drama", "Romance"],
     "Happy": ["Comedy", "Family", "Animation"],
     "Badmood": ["Comedy", "Adventure", "Fantasy"]
 }
 
+# Buat versi explode khusus untuk rekomendasi
+recommend_df = df.dropna(subset=['genres', 'rating']).copy()
+recommend_df['genres'] = recommend_df['genres'].str.split(", ")
+recommend_df = recommend_df.explode("genres")
+recommend_df = recommend_df[recommend_df['rating'] != "N/A"]
+recommend_df['rating'] = recommend_df['rating'].astype(float)
+recommend_df['year'] = recommend_df['year'].astype(int)
+
 mood = st.selectbox("Pilih Mood Kamu", list(mood_map.keys()))
-user_genre = st.selectbox("(Opsional) Tambah Genre Favoritmu", ["-"] + all_genres)
+user_genre = st.selectbox("(Opsional) Tambah Genre Favoritmu", ["-"] + sorted(recommend_df['genres'].unique()))
 target_genres = mood_map[mood].copy()
 if user_genre != "-":
     target_genres.append(user_genre)
 
-recommend = exploded[exploded['genres'].isin(target_genres)]
+recommend = recommend_df[recommend_df['genres'].isin(target_genres)]
 recommend = recommend.sort_values(by="rating", ascending=False).drop_duplicates("title")
+recommend['rating'] = recommend['rating'].round(1)
 
 st.markdown(f"Top rekomendasi untuk mood **{mood}**{f' & genre **{user_genre}**' if user_genre != '-' else ''}:")
-recommend['year'] = recommend['year'].astype(int)
-recommend['rating'] = recommend['rating'].astype(float).round(1)
-recommend['year'] = recommend['year'].astype(int)
+st.table(recommend[['title', 'year', 'genres', 'rating']].head(10))
+
 
 # Trending Movies This Year
 st.subheader("🔥 Film Trending Tahun Ini")
